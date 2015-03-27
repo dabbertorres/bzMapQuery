@@ -17,7 +17,7 @@ You will be prompted to enter the number of a map you wish to download (or enter
 Enter your choice, and shortly thereafter, you will have an extracted and ready to go map (in it's own folder)!
 
 # dependencies
-libzip: http://www.nih.at/libzip/
+libzip: http://www.nih.at/libzip
 SFML-Network: https://github.com/LaurentGomila/SFML
 
 # License
