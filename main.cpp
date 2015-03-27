@@ -80,6 +80,9 @@ void stripWebChars(std::string&);
 // get path of our program
 std::string getExePath();
 
+// get install location of Battlezone
+std::string getBZinstallDir();
+
 int main(int argc, char** argv)
 {
 	StrVec args(argv + 1, argv + argc);	// "+ 1" to skip first arg. It's the name of the program
@@ -391,4 +394,17 @@ void stripWebChars(std::string& str)
 	{
 		str.replace(str.find("%20"), 3, " ");	// replace it with a space
 	}
+}
+
+std::string getBZinstallDir()
+{
+	std::string path;
+
+	#ifdef __linux__
+
+	#else
+
+	#endif
+
+	return path;
 }
