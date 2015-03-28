@@ -8,9 +8,8 @@
 
 // sfml
 #include <SFML/Network/Http.hpp>
-#include <SFML/Network/Ftp.hpp>
 
-// zip
+// libzip
 #include <zip.h>
 
 // os
@@ -33,12 +32,16 @@ enum class MapType
 	All,
 };
 
-using byte = char;
+using bbyte = char;
 using StrVec = std::vector<std::string>;
 using StrMap = std::map<std::string, std::string>;
 
 /* constants */
+#ifdef __linux__
 constexpr unsigned int PATH_MAX = 1024;
+#else
+const unsigned int PATH_MAX = 1024;
+#endif
 const std::string SERVER_URL = "www.battlezone1.com";
 const std::string MAPS_PATH = "/downloads/maps/";
 
@@ -249,7 +252,7 @@ bool downloadMap(const std::string& url, sf::Http& server)
 	std::string fileName = url.substr(url.find_last_of("/") + 1);
 
 	std::ofstream fout;
-	fout.open(fileName);
+	fout.open(fileName, std::ofstream::binary);
 
 	if(fout.bad())
 	{
@@ -257,7 +260,7 @@ bool downloadMap(const std::string& url, sf::Http& server)
 		return false;
 	}
 
-	fout << response.getBody();
+	fout.write(response.getBody().data(), response.getBody().size());
 
 	fout.close();
 
@@ -305,7 +308,14 @@ bool extractMap(const std::string& file)
 				fileStr = fileStr.substr(fileStr.find_last_of('/') + 1);
 			}
 
-			std::vector<byte> bytes(fileInfo.size);
+			#ifndef __linux__
+				#pragma warning(push)
+				#pragma warning(disable: 4244)
+			#endif
+			std::vector<bbyte> bytes(fileInfo.size);	// just gotta deal with this conversion
+			#ifndef __linux__
+				#pragma warning(pop)
+			#endif
 
 			zip_fread(zipped, bytes.data(), fileInfo.size);
 
@@ -357,7 +367,7 @@ bool makeFolder(const std::string& name)
 			}
 		}
 	#else
-		if(CreateDirectory(name.c_str(), NULL) == 0)	// success check
+		if(CreateDirectory(name.c_str(), NULL) != 0)	// success check
 		{
 			// do nothing.
 		}
