@@ -38,21 +38,23 @@ using StrMap = std::map<std::string, std::string>;
 
 /* constants */
 #ifdef __linux__
-constexpr unsigned int PATH_MAX = 1024;
+	constexpr unsigned int PATH_MAX = 1024;
 #else
-const unsigned int PATH_MAX = 1024;
+	const unsigned int PATH_MAX = 1024;
 #endif
+
 const std::string SERVER_URL = "www.battlezone1.com";
 const std::string MAPS_PATH = "/downloads/maps/";
 
-const std::map<MapType, std::string> MAP_TYPE_PATHS =	{
-															{MapType::DM, "DM/"},
-															{MapType::ST, "strat/"},
-															{MapType::ST_DM, "strat_dm/"},
-															{MapType::MPI, "MPI/"},
-															{MapType::IA, "IA/"},
-															{MapType::RO, "RO/"}
-														};
+const std::map<MapType, std::string> MAP_TYPE_PATHS =	
+{
+	{MapType::DM, "DM/"},
+	{MapType::ST, "strat/"},
+	{MapType::ST_DM, "strat_dm/"},
+	{MapType::MPI, "MPI/"},
+	{MapType::IA, "IA/"},
+	{MapType::RO, "RO/"}
+};
 
 /* functions */
 // given a request, attempts to request page from server, and set given Response arg to result
@@ -65,7 +67,7 @@ StrMap getMapsFromPage(const sf::Http::Response&, const std::string&);
 // and returns a map of names and urls
 StrMap findMatches(const std::string&, sf::Http&, MapType = MapType::All);
 
-// attempts to download map via ftp
+// attempts to download map via http
 bool downloadMap(const std::string&, sf::Http& server);
 
 // attempts to extract map files from downloaded zip
@@ -400,9 +402,10 @@ std::string getExePath()
 
 void stripWebChars(std::string& str)
 {
-	if(str.find("%20") != std::string::npos)	// look for annoying stuff in string
+	auto pos = str.find("%20");
+	if(pos != std::string::npos)	// look for annoying stuff in string
 	{
-		str.replace(str.find("%20"), 3, " ");	// replace it with a space
+		str.replace(pos, 3, " ");	// replace it with a space
 	}
 }
 
