@@ -8,7 +8,7 @@ Open a command prompt/terminal/etc.
 
 Enter the name of this program, followed by something you want to search for. Spaces work. No need for escaping.
 
-Press <Enter>.
+Press `<Enter>`.
 
 A numbered list of results will output to the terminal.
 
