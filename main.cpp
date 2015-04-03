@@ -30,7 +30,6 @@ using bbyte = char;
 	const unsigned int PATH_MAX = 1024;	// friggin VS not having friggin constexpr is friggin dumb
 #endif
 
-/* functions */
 // attempts to extract map files from downloaded zip
 bool extractMap(const std::string&);
 
