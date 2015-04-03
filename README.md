@@ -12,7 +12,7 @@ Press `<Enter>`.
 
 A numbered list of results will output to the terminal.
 
-You will be prompted to enter the number of a map you wish to download (or enter -1 to exit/cancel).
+You will be prompted to enter the number(s) of a map(s) you wish to download (or enter -1 to exit/cancel).
 
 Enter your choice, and shortly thereafter, you will have an extracted and ready to go map (in it's own folder)!
 
