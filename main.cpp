@@ -26,8 +26,10 @@ using bbyte = char;
 /* constants */
 #ifdef __linux__
 	constexpr unsigned int PATH_MAX = 1024;
+	constexpr std::string BZ_REG_KEY_STR = "";
 #else
 	const unsigned int PATH_MAX = 1024;	// friggin VS not having friggin constexpr is friggin dumb
+	const std::string BZ_REG_KEY_STR = "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{B3B61934-313A-44A2-B589-700FDAA6C758}_is1";
 #endif
 
 // attempts to extract map files from downloaded zip
@@ -118,10 +120,18 @@ int main(int argc, char** argv)
 		}
 	}
 
+	std::string installLocation = getBZinstallDir();
+
+	if(installLocation.empty())
+		installLocation = getExePath();
+
+	installLocation += "addon/";
+
 	for(auto& c : choices)
 	{
 		auto choiceIter = std::next(results.begin(), c);
-		std::string resFileName = bz1server.downloadMap(choiceIter->second, "./");
+
+		std::string resFileName = bz1server.downloadMap(choiceIter->second, installLocation);
 
 		if(resFileName.empty())
 		{
@@ -148,8 +158,7 @@ bool extractMap(const std::string& file)
 
 	auto fileNumber = zip_get_num_entries(zipFile, 0);
 
-	std::string folderName = file.substr(file.find_last_of('/') + 1);	// cut off preceding directories in path
-	folderName = folderName.substr(0, folderName.find_last_of('.')) + "/";	// cut off file extension, add dir char
+	std::string folderName = file.substr(0, file.find_last_of('.')) + "/";	// cut off file extension, add dir char
 
 	stripWebChars(folderName);
 
@@ -212,6 +221,13 @@ bool extractMap(const std::string& file)
 
 	zip_close(zipFile);
 
+	// delete the zip file, it's no longer needed
+	#ifdef __linux__
+		// TBD
+	#else
+		DeleteFile(file.c_str());
+	#endif
+
 	return true;
 }
 
@@ -249,6 +265,16 @@ bool makeFolder(const std::string& name)
 	return true;
 }
 
+void stripWebChars(std::string& str)
+{
+	auto pos = str.find("%20");		// look for annoying stuff in string
+	while(pos != std::string::npos)
+	{
+		str.replace(pos, 3, " ");	// replace it with a space
+		pos = str.find("%20");
+	}
+}
+
 std::string getExePath()
 {
 	std::string path;
@@ -266,25 +292,43 @@ std::string getExePath()
 	return std::move(path);
 }
 
-void stripWebChars(std::string& str)
-{
-	auto pos = str.find("%20");		// look for annoying stuff in string
-	while(pos != std::string::npos)
-	{
-		str.replace(pos, 3, " ");	// replace it with a space
-		pos = str.find("%20");
-	}
-}
-
 std::string getBZinstallDir()
 {
 	std::string path;
 
 	#ifdef __linux__
-
+		// TBD
 	#else
+		HKEY bzRegKey;
+		unsigned char buffer[MAX_PATH] = {0};
+		unsigned long int bufferSize = MAX_PATH;
+		long int err = 0;
+
+		err = RegOpenKeyEx(HKEY_LOCAL_MACHINE, BZ_REG_KEY_STR.c_str(), 0, KEY_READ, &bzRegKey);
+
+		if(err != ERROR_SUCCESS)
+		{
+			std::cout << "[WARNING]: Failed to open BZ registry key. Installing map to my location.\n";
+			return "";
+		}
+
+		err = RegQueryValueEx(bzRegKey, "InstallLocation", NULL, NULL, buffer, &bufferSize);
+
+		if(err != ERROR_SUCCESS)
+		{
+			std::cout << "[WARNING]: Could not get InstallLocation of BZ registry key. Installing map to my location.\n";
+			return "";
+		}
+
+		path = std::string(reinterpret_cast<char*>(buffer), bufferSize);
+		path.pop_back();	// extra space at the end of the string?
+
+		while(path.find('\\') != std::string::npos)
+		{
+			path.replace(path.find('\\'), 1, 1, '/');
+		}
 
 	#endif
 
-	return path;
+	return std::move(path);
 }
